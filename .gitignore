@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+
+# サービスアカウントのJSON鍵は使わない方針。誤ってコミットしないよう明示的に除外する。
+*.json
+!.vscode/*.json
+service-account*.json
+credentials*.json
+
+# デプロイ設定(プロジェクトIDやSA名などの環境固有値)
+deploy/config.sh
+
+# ローカル実行時の出力
+alerts_watchlist.txt

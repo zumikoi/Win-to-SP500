@@ -1,0 +1,4 @@
+# thesis-generator が使うライブラリ
+anthropic
+gspread>=6.0.0
+google-auth

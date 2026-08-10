@@ -1,0 +1,36 @@
+# deploy/config.sh のひな形。
+#   cp deploy/config.sh.example deploy/config.sh
+# としてから、自分の環境の値に書き換える。
+# config.sh は .gitignore 済み(環境固有の値なのでコミットしない)。
+
+# ---- 必須 ----
+PROJECT_ID="your-gcp-project-id"
+
+# スクリプト実行用サービスアカウント(鍵は発行しない)。
+# 対象スプレッドシート2つに「編集者」として共有しておくこと。
+SERVICE_ACCOUNT="screener-runner@${PROJECT_ID}.iam.gserviceaccount.com"
+
+# ---- 任意(既定値のままで動く) ----
+REGION="asia-northeast1"
+
+# Cloud Scheduler がジョブを叩くための専用サービスアカウント。
+# deploy/schedule.sh が無ければ自動で作成する。
+SCHEDULER_SA="scheduler-invoker@${PROJECT_ID}.iam.gserviceaccount.com"
+
+# Secret Manager に登録済みのシークレット名(Anthropic APIキー)
+ANTHROPIC_SECRET_NAME="anthropic-api-key"
+
+# ---- スケジュール(UTC / cron 5フィールド) ----
+# 米国市場の引け後に回す。米国が冬時間(EST)の期間は引けが 22:00 UTC なので、
+# 両方の期間で確実に引け後になる 23:30 UTC を既定にしている。
+#   23:30 UTC (月-金) = JST 翌朝 08:30
+# 夏時間の期間だけ早めたい場合は "30 21 * * 1-5" などに変更する。
+MINERVINI_SCHEDULE="30 23 * * 1-5"
+MOMENTUM_SCHEDULE="45 23 * * 1-5"
+
+# 投資テーゼ生成は週2回。00:00 UTC 火・金 = JST 火・金の 09:00。
+# (直前 23:30 UTC のミネルヴィニ実行結果を読む)
+THESIS_SCHEDULE="0 0 * * 2,5"
+
+# 1回のテーゼ生成でClaude APIを呼ぶ最大銘柄数
+THESIS_MAX_TICKERS="15"

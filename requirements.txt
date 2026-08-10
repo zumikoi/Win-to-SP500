@@ -1,0 +1,5 @@
+# Cloud Run Jobs はこのリポジトリ全体を1つのイメージとしてビルドする
+# (共通モジュール common.py を3ジョブで共有するため)。
+# 実体は各ジョブ用のファイルを取り込むだけ。
+-r screeners/requirements.txt
+-r research/requirements.txt

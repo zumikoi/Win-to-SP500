@@ -1,0 +1,9 @@
+# minervini-screener / momentum-screener が使うライブラリ
+# Colab版(pandas 2.x)と計算結果を一致させるため、3.0系は避ける
+pandas<3
+numpy
+yfinance
+finvizfinance
+gspread>=6.0.0
+gspread-formatting
+google-auth
