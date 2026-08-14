@@ -23,8 +23,8 @@ def equity_curve(returns: pd.Series, initial: float = 1.0) -> pd.Series:
     return initial * (1.0 + returns).cumprod()
 
 
-def cagr(returns: pd.Series) -> float:
-    years = len(returns) / TRADING_DAYS
+def cagr(returns: pd.Series, periods: int = TRADING_DAYS) -> float:
+    years = len(returns) / periods
     if years <= 0:
         return np.nan
     growth = float((1.0 + returns).prod())
@@ -33,25 +33,29 @@ def cagr(returns: pd.Series) -> float:
     return growth ** (1.0 / years) - 1.0
 
 
-def volatility(returns: pd.Series) -> float:
-    return float(returns.std(ddof=1) * np.sqrt(TRADING_DAYS))
+def volatility(returns: pd.Series, periods: int = TRADING_DAYS) -> float:
+    return float(returns.std(ddof=1) * np.sqrt(periods))
 
 
-def sharpe(returns: pd.Series, rf: pd.Series | None = None) -> float:
+def sharpe(
+    returns: pd.Series, rf: pd.Series | None = None, periods: int = TRADING_DAYS
+) -> float:
     excess = returns - _align(returns, rf)
     sd = excess.std(ddof=1)
     if sd == 0 or np.isnan(sd):
         return np.nan
-    return float(excess.mean() / sd * np.sqrt(TRADING_DAYS))
+    return float(excess.mean() / sd * np.sqrt(periods))
 
 
-def sortino(returns: pd.Series, rf: pd.Series | None = None) -> float:
+def sortino(
+    returns: pd.Series, rf: pd.Series | None = None, periods: int = TRADING_DAYS
+) -> float:
     excess = returns - _align(returns, rf)
     downside = excess.clip(upper=0.0)
     dd = np.sqrt((downside**2).mean())
     if dd == 0 or np.isnan(dd):
         return np.nan
-    return float(excess.mean() / dd * np.sqrt(TRADING_DAYS))
+    return float(excess.mean() / dd * np.sqrt(periods))
 
 
 def drawdown(returns: pd.Series) -> pd.Series:
@@ -63,9 +67,9 @@ def max_drawdown(returns: pd.Series) -> float:
     return float(drawdown(returns).min())
 
 
-def calmar(returns: pd.Series) -> float:
+def calmar(returns: pd.Series, periods: int = TRADING_DAYS) -> float:
     mdd = abs(max_drawdown(returns))
-    return float(cagr(returns) / mdd) if mdd > 0 else np.nan
+    return float(cagr(returns, periods) / mdd) if mdd > 0 else np.nan
 
 
 def ulcer_index(returns: pd.Series) -> float:
@@ -224,10 +228,10 @@ def summary_table(blocks: dict[str, dict[str, float]]) -> pd.DataFrame:
 
 
 def rolling_outperformance(
-    returns: pd.Series, benchmark: pd.Series, years: int = 10
+    returns: pd.Series, benchmark: pd.Series, years: int = 10, periods: int = TRADING_DAYS
 ) -> pd.Series:
     """Rolling N-year total-return difference vs the benchmark."""
-    window = years * TRADING_DAYS
+    window = years * periods
     s = equity_curve(returns)
     b = equity_curve(benchmark.reindex(returns.index).fillna(0.0))
     return (s / s.shift(window)) / (b / b.shift(window)) - 1.0

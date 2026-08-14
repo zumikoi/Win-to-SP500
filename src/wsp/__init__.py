@@ -1,21 +1,45 @@
-"""Beat the S&P 500 - a trend + volatility-targeted strategy, honestly evaluated.
+"""Beat the S&P 500 - strategies evaluated honestly enough to fail.
 
-Quick start::
+Two studies live here. The single-asset one (`strategy`, `walkforward`) times the
+S&P 500 itself and *does not* beat it once the start date moves past 1963. The
+multi-asset one (`multiasset`, `portfolio`) diversifies across equities, bonds
+and gold and does beat it, from every start date tested.
 
-    from wsp import data, strategy, backtest, walkforward
+Single asset::
 
+    from wsp import data, walkforward
     market = data.load()                       # daily total returns since 1928
-    result = walkforward.walk_forward(market)  # parameters chosen out of sample
+    print(walkforward.walk_forward(market).summary())
+
+Multi asset::
+
+    from wsp import multiasset, portfolio
+    panel = multiasset.load()                  # monthly, 4 assets, since 1953
+    result, leverage = portfolio.walk_forward(panel)
     print(result.summary())
 """
 
-from . import backtest, data, metrics, report, signals, strategy, walkforward
+from . import (
+    backtest,
+    data,
+    metrics,
+    multiasset,
+    portfolio,
+    report,
+    report_ja,
+    signals,
+    strategy,
+    walkforward,
+)
 
 __all__ = [
     "backtest",
     "data",
     "metrics",
+    "multiasset",
+    "portfolio",
     "report",
+    "report_ja",
     "signals",
     "strategy",
     "walkforward",

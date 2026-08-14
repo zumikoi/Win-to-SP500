@@ -40,6 +40,49 @@ These are the reasons the reports default to **1928 onwards** (`wsp.data.SP500_S
   costs an ETF expense ratio; the total-return column already nets 0.0945%, which
   is charged to the benchmark and the strategy alike.
 
+## `multi_asset_monthly.csv.gz`
+
+Monthly panel for the multi-asset strategy, **1953-05 to 2025-12** (872 rows).
+Built by `wsp.multiasset.fetch()` from three sources.
+
+| Column | Meaning | Source |
+|---|---|---|
+| `equity` | S&P 500 monthly total return | month-end resample of `us_market_daily.csv.gz` |
+| `bond` | 10-year Treasury monthly total return | derived from the 10y yield, see below |
+| `gold` | gold monthly return | [`datasets/gold-prices`](https://github.com/datasets/gold-prices) (London fix) |
+| `cash` | T-bill monthly return | month-end resample of `us_market_daily.csv.gz` |
+| `yield_10y` | 10-year Treasury constant-maturity yield | [`datasets/bond-yields-us-10y`](https://github.com/datasets/bond-yields-us-10y) (FRED `GS10`) |
+
+The sample starts in 1953-05 because that is when the 10-year yield series begins.
+
+### How the bond return is constructed
+
+There is no long, free daily total-return series for Treasuries, so it is priced
+from the yield. Each month a **par bond** is bought (coupon = the current 10-year
+yield) and marked one month later at the new yield with 10 years minus one month
+remaining. The return is the change in that **dirty** price.
+
+The dirty price already contains the accrued coupon, so no coupon is added on top
+— doing that inflates the series to an impossible ~11% CAGR, which is what the
+first draft of this repo did.
+`tests/test_portfolio.py::test_bond_return_with_flat_yields_is_the_coupon` pins
+the behaviour: with a flat yield curve the monthly return must equal coupon ÷ 12.
+
+The resulting series returns **5.36% a year with 6.4% volatility** over
+1953-2025, in line with published 10-year Treasury index history.
+
+### Caveats specific to this panel
+
+- **Gold before 1971 is not a market price.** It was pegged (\$35/oz) until the
+  Bretton Woods system ended, so gold's return in the 1970s reflects a one-time
+  regime change that cannot repeat in the same form.
+- **The bond series is a model, not an index.** It assumes a par bond rolled
+  monthly with no transaction cost, and it ignores the on-the-run/off-the-run
+  spread. Good enough for allocation decisions, not for pricing.
+- **Gold is a spot price.** Holding physical gold has storage costs and an ETF
+  has an expense ratio (~0.10-0.40%), neither of which is deducted here.
+- **Everything is in USD.** No currency hedging or conversion is modelled.
+
 ## Cross-check
 
 The bundled total-return series reproduces well-known figures, which is the
