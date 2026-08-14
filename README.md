@@ -62,6 +62,27 @@ Cloud Scheduler ──(OIDC/OAuth)──▶ Cloud Run Jobs ──▶ Google Shee
 
 ## 3. 初回セットアップ
 
+### いちばん簡単な方法(推奨)
+
+[Google Cloud コンソール](https://console.cloud.google.com/) 右上の `>_`(Cloud Shell)を開き、
+次の**1行**を貼り付けるだけ。パソコンへのインストールは不要。
+
+```bash
+rm -rf ~/Win-to-SP500 && git clone -b claude/handoff-prompt-review-ib3scs https://github.com/zumikoi/Win-to-SP500.git ~/Win-to-SP500 && cd ~/Win-to-SP500 && ./deploy/setup.sh
+```
+
+`deploy/setup.sh` が API有効化 → サービスアカウント作成 → シークレット登録 →
+デプロイ → スケジュール設定 → テスト実行 まで通しでやる。何度実行しても壊れない。
+
+あなたが手を動かすのは2か所だけ:
+
+1. **Anthropic APIキーの貼り付け**(スクリプトが聞いてくる)
+2. **スプレッドシート2つの共有**(スクリプトが一時停止するので、その間にブラウザで作業)
+
+> 画面つきの手順書は [セットアップガイド](https://claude.ai/code/artifact/56854dde-0269-4aba-a019-e2345e926787) を参照。
+
+以下 3-1〜3-4 は、手動で1つずつやりたい場合の内訳。
+
 ### 3-1. 前提の確認
 
 ```bash
