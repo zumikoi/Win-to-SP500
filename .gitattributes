@@ -1,0 +1,10 @@
+# Cloud Run のビルド(buildpacks)は Linux 上で動くため、
+# Procfile とシェルスクリプトの改行は必ず LF にする。
+# Windows で編集して CRLF になると、エントリポイントが壊れてビルドが失敗する。
+Procfile   text eol=lf
+*.sh       text eol=lf
+*.py       text eol=lf
+requirements.txt text eol=lf
+
+# PowerShell スクリプトは Windows 側で使うので CRLF のまま
+*.ps1      text eol=crlf

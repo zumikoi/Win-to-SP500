@@ -43,6 +43,7 @@ deploy_job() {
     --max-retries=1 \
     --command=python \
     --args="-m,${module}" \
+    --quiet \
     "$@"
 }
 

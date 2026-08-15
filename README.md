@@ -41,6 +41,7 @@ Cloud Scheduler ──(OIDC/OAuth)──▶ Cloud Run Jobs ──▶ Google Shee
 ├── common.py                    共通処理: 認証 / リトライ / 実行ステータス記録
 ├── requirements.txt             ルート(下2つを取り込むだけ)
 ├── Procfile                     buildpacks用。実行時は --command/--args で上書きされる
+├── .gitattributes               Procfile/*.sh を必ずLFに保つ(CRLFだとビルドが壊れる)
 ├── screeners/
 │   ├── minervini_screener.py    ミネルヴィニ・スクリーナー
 │   ├── momentum_screener.py     モメンタム・スクリーナー
@@ -49,7 +50,9 @@ Cloud Scheduler ──(OIDC/OAuth)──▶ Cloud Run Jobs ──▶ Google Shee
 │   ├── generate_thesis.py       投資テーゼ生成(ショートリスト接続済み)
 │   └── requirements.txt
 └── deploy/
-    ├── config.sh.example        設定のひな形(コピーして config.sh を作る)
+    ├── setup.ps1                【Windows】初回セットアップ〜デプロイまで一括
+    ├── setup.sh                 【Cloud Shell / Mac / Linux】同上のbash版
+    ├── config.sh.example        設定のひな形(setup が自動生成するので通常は不要)
     ├── deploy.sh                Cloud Run Jobs へのデプロイ
     ├── schedule.sh              Cloud Scheduler の設定
     └── alert.sh                 失敗時メール通知の設定(任意)
@@ -60,26 +63,54 @@ Cloud Scheduler ──(OIDC/OAuth)──▶ Cloud Run Jobs ──▶ Google Shee
 
 ---
 
-## 3. 初回セットアップ
+## 3. 原本とデプロイ
 
-### いちばん簡単な方法(推奨)
+### ファイルの置き場所
 
-[Google Cloud コンソール](https://console.cloud.google.com/) 右上の `>_`(Cloud Shell)を開き、
-次の**1行**を貼り付けるだけ。パソコンへのインストールは不要。
+| 役割 | 場所 |
+|---|---|
+| **原本**(編集・実行する場所) | `C:\Users\natso\OneDrive\Desktop\Claude Code\Win-to-SP500` |
+| **副本**(バックアップ・作業用) | [github.com/zumikoi/Win-to-SP500](https://github.com/zumikoi/Win-to-SP500) ブランチ `claude/handoff-prompt-review-ib3scs` |
 
-```bash
-rm -rf ~/Win-to-SP500 && git clone -b claude/handoff-prompt-review-ib3scs https://github.com/zumikoi/Win-to-SP500.git ~/Win-to-SP500 && cd ~/Win-to-SP500 && ./deploy/setup.sh
+デプロイは原本フォルダから直接行う。Cloud Shell はGoogleのサーバー上で動くため、
+ローカルのCドライブは見えない点に注意。
+
+### 初回セットアップ(Windows / PowerShell)
+
+事前に [Google Cloud CLI](https://cloud.google.com/sdk/docs/install#windows) を入れて、
+**PowerShellを開き直しておく**(開き直さないと `gcloud` が見つからない)。
+
+```powershell
+Set-Location -LiteralPath "C:\Users\natso\OneDrive\Desktop\Claude Code\Win-to-SP500"
+powershell -ExecutionPolicy Bypass -File ".\deploy\setup.ps1"
 ```
 
-`deploy/setup.sh` が API有効化 → サービスアカウント作成 → シークレット登録 →
+> パスに空白(`Claude Code`)が含まれるため、**必ずダブルクォートで囲む**こと。
+> 囲まないと「指定されたパスが見つかりません」になる。
+
+`deploy/setup.ps1` が API有効化 → サービスアカウント作成 → シークレット登録 →
 デプロイ → スケジュール設定 → テスト実行 まで通しでやる。何度実行しても壊れない。
 
-あなたが手を動かすのは2か所だけ:
+手を動かすのは2か所だけ:
 
 1. **Anthropic APIキーの貼り付け**(スクリプトが聞いてくる)
 2. **スプレッドシート2つの共有**(スクリプトが一時停止するので、その間にブラウザで作業)
 
+**コードを直したあと、デプロイだけやり直す:**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File ".\deploy\setup.ps1" -DeployOnly
+```
+
 > 画面つきの手順書は [セットアップガイド](https://claude.ai/code/artifact/56854dde-0269-4aba-a019-e2345e926787) を参照。
+
+### Cloud Shell / Mac / Linux から行う場合
+
+同じ処理の bash 版を用意してある。
+
+```bash
+./deploy/setup.sh
+```
 
 以下 3-1〜3-4 は、手動で1つずつやりたい場合の内訳。
 
